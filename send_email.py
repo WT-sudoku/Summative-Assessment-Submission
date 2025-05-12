@@ -32,12 +32,14 @@ class EmailSender:
         msg["To"] = recipient_email
         msg["Subject"] = subject
 
-        # Attach email body
+        # Attach email body (Add body to email)
         msg.attach(MIMEText(body, "plain"))
 
         try:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=10) as server:
+                # Log in to the email server (gmail)
                 server.login(self.sender_email, self.sender_password)
+                # Send email
                 server.send_message(msg)
             print(f"Email sent to {recipient_name} at {recipient_email}")
         except Exception as e:

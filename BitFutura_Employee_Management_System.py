@@ -130,6 +130,7 @@ def validate_contact(contact):
     """Validates email format and max 20 characters."""
     return bool(re.fullmatch(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}", contact)) and len(contact) <= 20
 
+
 # -3- # --- Employee Class ---
 class Employee:
     """Class to represent an Employee"""
@@ -203,45 +204,65 @@ class EmployeeManagementSystem:
 
 
     def add_employee(self):
-        """Add a new employee with unique ID and email validation."""
-        # Placeholder for adding an employee
+        """Add a new employee with unique ID and email validation, with confirmation before saving."""
         try:
+            # Prompt and validate employee ID
             emp_id = input("Enter Employee ID (Format: E12345678): ").strip()
             if not validate_employee_id(emp_id):
                 print("Invalid Employee ID format.")
                 return
 
+            # Check for duplicate employee ID
             if self.find_employee_by_id(emp_id):
                 print("Employee ID already exists.")
                 return 
 
+            # Prompt and validate name
             name = input("Enter Name: ").strip()
             if not validate_name(name):
                 print("Invalid Name.")
                 return
-            
+
+            # Prompt and validate department
             dept = input("Enter Department: ").strip()
             if not validate_department(dept):
                 print("Invalid Department")
                 return
 
+            # Prompt and validate salary
             salary = input("Enter Salary: ").strip()
             if not validate_salary(salary):
                 print("Invalid Salary")
                 return
-            
+
+            # Prompt and validate contact email
             contact = input("Enter Contact Email: ").strip()
             if not validate_contact(contact) or any(emp.contact.lower() == contact.lower() for emp in self.employees):
                 print("Invalid or duplicate Contact Email.")
                 return
-            
+
+            # Show a preview before confirmation
+            print("\n📋 Review Employee Details:")
+            print(f"ID: {emp_id}")
+            print(f"Name: {name}")
+            print(f"Department: {dept}")
+            print(f"Salary: ${float(salary):.2f}")
+            print(f"Contact: {contact}")
+            print("-" * 40)
+
+            # Ask for user confirmation
+            confirm = input("⚠️ Confirm add this employee? (yes/no): ").strip().lower()
+            if confirm != "yes":
+                print("Employee addition cancelled.")
+                return
+
+            # Create and store new employee
             new_emp = Employee(emp_id, name, dept, salary, contact)
             self.employees.append(new_emp)
             self.save_employees()
             print("Employee added successfully.")
 
-            # Email Sender [point to send_email.py]:
-            # Send confirmation email upon successfully enrollment
+            # Send confirmation email
             subject = f"Welcome to the Company, {name}!"
             body = (
                 f"Hi {name},\n\n"
@@ -269,14 +290,26 @@ class EmployeeManagementSystem:
                 print("Invalid Employee ID format.")
                 return
 
-            # Search for employee
+            # Attempt to find the employee record
             emp = self.find_employee_by_id(emp_id)
+
+            # If employee is found, prompt for confirmation
             if emp:
-                print(emp)  # Uses __str__ method of Employee class
+                confirm = input(f"⚠️ View report for employee '{emp_id}'? (yes/no): ").strip().lower()
+                if confirm != "yes":
+                    print("❎ Report cancelled by user.")
+                    return
+                # Show employee details
+                print("\n Employee Details:")
+                print(emp)
             else:
+                # Inform user if no employee is found
                 print("Employee not found.")
+
         except Exception as e:
+            # Handle any unexpected errors gracefully
             print(f"Error viewing employee: {e}")
+
 
     def update_employee(self):
         """Update an employee's details with validation and confirmation before saving."""
@@ -295,6 +328,12 @@ class EmployeeManagementSystem:
             # Display current employee details using __str__ method
             print("\nCurrent Employee Details:")
             print(emp)
+
+            ## Ask for confirmation before proceeding with the update
+            confirm_initial = input("⚠️ Do you want to proceed with updating this employee? (yes/no): ").strip().lower()
+            if confirm_initial != "yes":
+                print("❎ Update cancelled by user.")
+                return 
 
             # Prompt user for new values (leave blank to retain old value)
             new_name = input(f"New name [{emp.name}]: ").strip()
@@ -374,15 +413,19 @@ class EmployeeManagementSystem:
                 print("Employee not found.")
                 return
             
+            # First confirmation: does user want to continue after finding the employee
+            confirm_view = input("⚠️ Do you want to view and proceed with deletion? (yes/no): ").strip().lower()
+            if confirm_view != "yes":
+                print("❎ Deletion cancelled by user.")
+                return
+
             # Display the found employee's current details using __str__ method
             print("\n Employee Found:")
             print(emp)
 
-            # Ask the user for confirmation before performing the deletion
-            confirm = input("⚠️ Are you sure you want to delete this employee? (yes/no): ").strip().lower()
-
-            # Proceed with deletion only if the user confirms with 'yes'
-            if confirm == "yes":
+            # Second confirmation before final deletion
+            confirm_delete = input("⚠️ Are you sure you want to delete this employee? (yes/no): ").strip().lower()
+            if confirm_delete == "yes":
                 # Remove the employee object from the employees list
                 self.employees.remove(emp)
 
@@ -406,7 +449,14 @@ class EmployeeManagementSystem:
             if not self.employees:
                 print("⚠️ No employees found.")
                 return
-
+            
+            # Ask for confirmation before displaying the list
+            confirm = input("⚠️ View all employee records? (yes/no): ").strip().lower()
+            if confirm != "yes":
+                print("❎ Listing cancelled by user.")
+                return
+            
+            # Display header
             print("\n All Employee Records")
             print("=" * 40)
 
@@ -431,8 +481,14 @@ class EmployeeManagementSystem:
             if not matching_employees:
                 print(" No employees found in that department.")
                 return
-
-            # Print department header
+            
+            # Ask for confirmation before displaying the report
+            confirm = input(f"⚠️ View report for department '{dept_name.title()}'? (yes/no): ").strip().lower()
+            if confirm != "yes":
+                print("❎ Report cancelled by user.")
+                return
+        
+            # Proceed to print department report header
             print(f"\n Employees in Department: {dept_name.title()}")
             print("=" * 40)
 
